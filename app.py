@@ -7,7 +7,7 @@ from typing import Optional
 BASE_API_URL = "https://api.langflow.astra.datastax.com"
 LANGFLOW_ID = "34d17c26-a986-4b87-a228-81e15a1ecc86"
 FLOW_ID = "41118164-5374-4bdf-b00b-efa4689337b4"
-APPLICATION_TOKEN = "your_application_token_here"  # Replace with your actual token
+APPLICATION_TOKEN = "AstraCS:shnkZvUZQHDPngiHIkOuEijG:f6fc07719e26734e79b16b9c688e0a813646e1f4bd69d48a79576644f6326aa5"  # Replace with your actual token
 
 # Your existing TWEAKS dictionary
 TWEAKS = {
