@@ -7,7 +7,7 @@ from typing import Optional
 BASE_API_URL = "https://api.langflow.astra.datastax.com"
 LANGFLOW_ID = "34d17c26-a986-4b87-a228-81e15a1ecc86"
 FLOW_ID = "41118164-5374-4bdf-b00b-efa4689337b4"
-APPLICATION_TOKEN = "AstraCS:shnkZvUZQHDPngiHIkOuEijG:f6fc07719e26734e79b16b9c688e0a813646e1f4bd69d48a79576644f6326aa5"  # Replace with your actual token
+APPLICATION_TOKEN = st.secrets["APPLICATION_TOKEN"]  # Using Streamlit secrets
 
 # Your existing TWEAKS dictionary
 TWEAKS = {
@@ -43,13 +43,21 @@ def run_flow(message: str,
         payload["tweaks"] = tweaks
         
     try:
+        print("Making request to:", api_url)  # Debug print
+        print("With payload:", payload)  # Debug print
+        
         response = requests.post(api_url, json=payload, headers=headers)
+        
+        print("Response status:", response.status_code)  # Debug print
+        print("Response content:", response.text)  # Debug print
+        
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
+        print("Error details:", str(e))  # Debug print
         return {"error": str(e)}
 
-# Remove the ... and add proper indentation for all Streamlit UI code
+# Streamlit UI setup
 st.set_page_config(
     page_title="People's Leasing PLC Investment Assistant",
     page_icon="💼",
@@ -82,11 +90,28 @@ if prompt := st.chat_input("What would you like to know?"):
             response = run_flow(prompt)
             if "error" in response:
                 st.error(f"Error: {response['error']}")
+                st.write("Full response:", response)  # Debug print
             else:
-                # Extract the actual response text from your Langflow response
-                response_text = response.get("output", "No response received")
-                st.markdown(response_text)
-                st.session_state.messages.append({"role": "assistant", "content": response_text})
+                try:
+                    # Try different possible response structures
+                    if isinstance(response, dict):
+                        if "output" in response:
+                            response_text = response["output"]
+                        elif "response" in response:
+                            response_text = response["response"]
+                        elif "answer" in response:
+                            response_text = response["answer"]
+                        else:
+                            st.write("Response structure:", response)  # Debug print
+                            response_text = str(response)
+                    else:
+                        response_text = str(response)
+                    
+                    st.markdown(response_text)
+                    st.session_state.messages.append({"role": "assistant", "content": response_text})
+                except Exception as e:
+                    st.error(f"Error processing response: {str(e)}")
+                    st.write("Original response:", response)  # Debug print
 
 # Footer
 st.markdown("---")
