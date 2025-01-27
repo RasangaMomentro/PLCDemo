@@ -88,30 +88,25 @@ if prompt := st.chat_input("What would you like to know?"):
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             response = run_flow(prompt)
-            if "error" in response:
-                st.error(f"Error: {response['error']}")
-                st.write("Full response:", response)  # Debug print
-            else:
-                try:
-                    # Try different possible response structures
-                    if isinstance(response, dict):
-                        if "output" in response:
-                            response_text = response["output"]
-                        elif "response" in response:
-                            response_text = response["response"]
-                        elif "answer" in response:
-                            response_text = response["answer"]
-                        else:
-                            st.write("Response structure:", response)  # Debug print
-                            response_text = str(response)
-                    else:
-                        response_text = str(response)
+            try:
+                # Navigate through the nested structure to get the message
+                if isinstance(response, dict):
+                    # Extract message from the nested structure
+                    message = (response.get('outputs', [])[0]
+                              .get('outputs', [])[0]
+                              .get('results', {})
+                              .get('message', {})
+                              .get('data', {})
+                              .get('text', 'No response received'))
                     
-                    st.markdown(response_text)
-                    st.session_state.messages.append({"role": "assistant", "content": response_text})
-                except Exception as e:
-                    st.error(f"Error processing response: {str(e)}")
-                    st.write("Original response:", response)  # Debug print
+                    st.markdown(message)
+                    st.session_state.messages.append({"role": "assistant", "content": message})
+                else:
+                    st.error("Unexpected response format")
+                    st.write("Response:", response)
+            except Exception as e:
+                st.error(f"Error processing response: {str(e)}")
+                st.write("Original response:", response)
 
 # Footer
 st.markdown("---")
